@@ -38,3 +38,15 @@ P 0587871F vscroll$up.png
 P 5FD17798 vscroll.png
 P DDDDFB9E vslider$bar.png
 P 01BAE7F5 vslider.png
+D images
+P 1E9CE05C addbombnum.png
+P 4638A25B adddamage.png
+P 00602FDB addhp.png
+P 485C8663 addpower.png
+P D2B98FD6 addspeed.png
+P 28C1022B bomb.png
+P 7308295F enemy.png
+P 3F5E5A0C fireh.png
+P 3859BF98 firew.png
+P 26B56732 normal.png
+P 26D88DB6 wall2.png

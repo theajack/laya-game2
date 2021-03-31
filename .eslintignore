@@ -8,7 +8,10 @@ laya-game
 libs
 node_modules
 release
+
 *.html
+*.min.js
+*.min.js
 
 src/ui/layaMaxUI.ts
 src/GameConfig.ts
