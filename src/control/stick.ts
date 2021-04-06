@@ -4,13 +4,17 @@ const POS = {
     X: 20,
     Y: 20,
 };
+const CENTER_POS = {
+    X: POS.X + RADIUS,
+    Y: POS.Y + RADIUS,
+};
 
 export default class stick extends Laya.Script {
     private size = DIAMETER / 2;
     private bgRadius = RADIUS;
     private isTouchDown: boolean = false;
     private point: Laya.Point = new Laya.Point(this.size, this.size);
-    private centerPoint = new Laya.Point(POS.X + this.bgRadius, POS.Y + this.bgRadius)
+    private centerPoint = new Laya.Point(CENTER_POS.X, CENTER_POS.Y)
     private stick: Laya.Sprite;
     constructor () { super(); }
     
