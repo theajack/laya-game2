@@ -29,7 +29,7 @@ export default class GameControl extends Laya.Script {
         //     this._initSize();
         // }
         e.stopPropagation();
-        moveMap({x: 0, y: 100});
+        // moveMap({x: 0, y: 100});
         // // 舞台被点击后，使用对象池创建子弹
         // const x = Laya.stage.mouseX;
         // const y = 50;

@@ -75,7 +75,61 @@
         }
         onStageClick(e) {
             e.stopPropagation();
-            moveMap({ x: 0, y: 100 });
+        }
+    }
+
+    const DIAMETER = 100;
+    const RADIUS = DIAMETER / 2;
+    const POS = {
+        X: 20,
+        Y: 20,
+    };
+    class stick extends Laya.Script {
+        constructor() {
+            super();
+            this.size = DIAMETER / 2;
+            this.bgRadius = RADIUS;
+            this.isTouchDown = false;
+            this.point = new Laya.Point(this.size, this.size);
+            this.centerPoint = new Laya.Point(POS.X + this.bgRadius, POS.Y + this.bgRadius);
+        }
+        onEnable() {
+            this.stick = this.owner.getChildByName('stick');
+            this.stick.on(Laya.Event.MOUSE_DOWN, this, (e) => {
+                this.isTouchDown = true;
+                this._setStickPosition(e);
+            });
+            this.stick.on(Laya.Event.MOUSE_UP, this, () => {
+                this.isTouchDown = false;
+                this._resetStickPosition();
+            });
+            window.stick = stick;
+        }
+        onStageMouseMove(e) {
+            if (!this.isTouchDown) {
+                return;
+            }
+            this._setStickPosition(e);
+        }
+        _setStickPosition(e) {
+            const dis = this.centerPoint.distance(e.stageX, e.stageY);
+            let x = e.stageX - POS.X;
+            let y = e.stageY - POS.Y;
+            if (dis > this.bgRadius) {
+                const rate = this.bgRadius / dis;
+                x *= rate;
+                y *= rate;
+            }
+            this.point.setTo(x, y);
+            this._initStickPosition();
+        }
+        _resetStickPosition() {
+            this.point.setTo(POS.X + RADIUS / 2, POS.Y + RADIUS / 2);
+            this._initStickPosition();
+        }
+        _initStickPosition() {
+            this.stick.x = this.point.x - this.size / 2;
+            this.stick.y = this.point.y - this.size / 2;
         }
     }
 
@@ -85,6 +139,7 @@
         static init() {
             var reg = Laya.ClassUtils.regClass;
             reg("control/GameControl.ts", GameControl);
+            reg("control/stick.ts", stick);
         }
     }
     GameConfig.width = 640;
