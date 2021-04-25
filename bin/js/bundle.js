@@ -626,14 +626,9 @@
             STICK_RADIUS: STICK_DIAMETER / 2,
             RELATIVE_POS,
             RELATIVE_CENTER_POS: new Laya.Point(RELATIVE_POS.x + DIAMETER / 2, RELATIVE_POS.y + DIAMETER / 2),
-            TRUE_POS: new Laya.Point(RELATIVE_POS.x, RELATIVE_POS.y),
             STICK_RELATIVE_POS: new Laya.Point(STICK_OFFSET, STICK_OFFSET),
             STICK_OFFSET,
             SCREEN_CENTER: { x: SCREEN_WIDTH / 2, y: SCREEN_HEIGHT / 2 },
-            resetStickPos() {
-                const offset = getMapPosition();
-                pos.TRUE_POS.setTo(offset.x + pos.RELATIVE_POS.x, offset.y + pos.RELATIVE_POS.y);
-            },
             setMapOffset(offset) {
                 const currentOffset = getMapPosition();
                 if (currentOffset.x + offset.x < -POS.SCREEN_CENTER.x) {
@@ -662,11 +657,20 @@
         }
         onEnable() {
             this._gameBox = this.owner.getChildByName('gameBox');
+            this._uiControl = this.owner.getChildByName('uiControl');
+            event.regist(EVENT.ON_MAP_MOVE, () => {
+                const mapOffset = getMapPosition();
+                this._uiControl.x = mapOffset.x;
+                this._uiControl.y = mapOffset.y;
+            });
             window.createWall = this.createWall.bind(this);
-            console.log(this._gameBox);
+            window.gameBox = this._gameBox;
+            window.uiControl = this._uiControl;
+            window.gameControl = this;
         }
         onStart() {
             initMap(this);
+            this._initPlayer();
         }
         onUpdate() {
             mapAutoMove();
@@ -679,6 +683,17 @@
             wall.pos(x, y);
             this._gameBox.addChild(wall);
             window.wall = wall;
+        }
+        _initPlayer() {
+            const player = Laya.Pool.getItemByCreateFun('player', this.player.create, this.player);
+            player.pos(POS.SCREEN_CENTER.x, POS.SCREEN_CENTER.y);
+            this._gameBox.addChild(player);
+            event.regist(EVENT.ON_MAP_MOVE, () => {
+                const mapOffset = getMapPosition();
+                this._uiControl.x = mapOffset.x + POS.SCREEN_CENTER.x;
+                this._uiControl.y = mapOffset.y + POS.SCREEN_CENTER.x;
+            });
+            window.player = player;
         }
     }
 
@@ -705,12 +720,6 @@
         }
         onEnable() {
             this.stick = this.owner.getChildByName('stick');
-            event.regist(EVENT.ON_MAP_MOVE, () => {
-                const owner = this.owner;
-                POS.resetStickPos();
-                owner.x = POS.TRUE_POS.x;
-                owner.y = POS.TRUE_POS.y;
-            });
             window.stick = stick;
             window._this = this;
         }

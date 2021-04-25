@@ -107,18 +107,10 @@ export const POS = (() => {
         STICK_RADIUS: STICK_DIAMETER / 2, // 小圆的直径
         RELATIVE_POS, // 大圆相对屏幕左上角的位置
         RELATIVE_CENTER_POS: new Laya.Point(RELATIVE_POS.x + DIAMETER / 2, RELATIVE_POS.y + DIAMETER / 2),
-        TRUE_POS: new Laya.Point(RELATIVE_POS.x, RELATIVE_POS.y), // 大圆相对于场景左上角的位置
         STICK_RELATIVE_POS: new Laya.Point(STICK_OFFSET, STICK_OFFSET), // 小圆相对于大圆的位置
         STICK_OFFSET,
         SCREEN_CENTER: {x: SCREEN_WIDTH / 2, y: SCREEN_HEIGHT / 2},
 
-        resetStickPos () {
-            const offset = getMapPosition();
-            pos.TRUE_POS.setTo(
-                offset.x + pos.RELATIVE_POS.x,
-                offset.y + pos.RELATIVE_POS.y
-            );
-        },
         // 控制不要移动出边界
         setMapOffset (offset: IPoint) {
             // x, y表示鼠标的落点的相对大圆左上角的位置，也就是小圆的中心点相对大圆左上角的位置

@@ -12,22 +12,8 @@ export default class stick extends Laya.Script {
     
     onEnable (): void {
         this.stick = this.owner.getChildByName('stick') as Laya.Sprite;
-        // this.stick.on(Laya.Event.MOUSE_DOWN, this, (e: Laya.Event) => {
-        //     // e.stageX 是点击点相对于左上角的距离
-        //     this.isTouchDown = true;
-        //     this._setStickPosition(e);
-        // });
-        // this.stick.on(Laya.Event.MOUSE_UP, this, this._releaseStick);
-        // this.owner.parent.on(Laya.Event.MOUSE_UP, this, this._releaseStick);
-        event.regist(EVENT.ON_MAP_MOVE, () => {
-            const owner = (this.owner as Laya.Sprite);
-            POS.resetStickPos();
-            owner.x = POS.TRUE_POS.x;
-            owner.y = POS.TRUE_POS.y;
-        });
         window.stick = stick;
         window._this = this;
-        // debugger;
     }
     onStageMouseDown (e: Laya.Event): void{
         if (isPointInRect({

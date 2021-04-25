@@ -4,7 +4,9 @@
  * 游戏控制脚本。定义了几个dropBox，bullet，createBoxInterval等变量，能够在IDE显示及设置该变量
  * 更多类型定义，请参考官方文档
  */
-import {initMap, mapAutoMove} from './map-control';
+import {EVENT} from '../util/constant';
+import event from '../util/event';
+import {getMapPosition, initMap, mapAutoMove, POS} from './map-control';
 
 export default class GameControl extends Laya.Script {
     /** @prop {name:wall,tips:"墙预制体对象",type:Prefab}*/
@@ -17,6 +19,7 @@ export default class GameControl extends Laya.Script {
     star: Laya.Prefab;
     static instance: GameControl;
     private _gameBox: Laya.Sprite;
+    private _uiControl: Laya.Sprite;
     constructor () {
         super();
         GameControl.instance = this;
@@ -24,11 +27,22 @@ export default class GameControl extends Laya.Script {
 
     onEnable (): void {
         this._gameBox = this.owner.getChildByName('gameBox') as Laya.Sprite;
+        this._uiControl = this.owner.getChildByName('uiControl') as Laya.Sprite;
+        
+        event.regist(EVENT.ON_MAP_MOVE, () => {
+            const mapOffset = getMapPosition();
+            this._uiControl.x = mapOffset.x;
+            this._uiControl.y = mapOffset.y;
+        });
+
         window.createWall = this.createWall.bind(this);
-        console.log(this._gameBox);
+        window.gameBox = this._gameBox;
+        window.uiControl = this._uiControl;
+        window.gameControl = this;
     }
     onStart () {
         initMap(this);
+        // this._initPlayer();
     }
     onUpdate () {
         mapAutoMove();
@@ -59,6 +73,18 @@ export default class GameControl extends Laya.Script {
         this._gameBox.addChild(wall);
         // this.owner.addChild(wall);
         window.wall = wall;
+    }
+
+    private _initPlayer () {
+        const player: Laya.Sprite = Laya.Pool.getItemByCreateFun('player', this.player.create, this.player);
+        player.pos(POS.SCREEN_CENTER.x, POS.SCREEN_CENTER.y);
+        this._gameBox.addChild(player);
+        event.regist(EVENT.ON_MAP_MOVE, () => {
+            const mapOffset = getMapPosition();
+            this._uiControl.x = mapOffset.x + POS.SCREEN_CENTER.x;
+            this._uiControl.y = mapOffset.y + POS.SCREEN_CENTER.x;
+        });
+        window.player = player;
     }
     
 
