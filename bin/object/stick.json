@@ -1,0 +1,1 @@
+{"type":"Sprite","props":{"y":0,"x":0,"width":100,"presetID":1,"name":"stick","isPresetRoot":true,"height":100},"compId":42,"child":[{"type":"Sprite","props":{"presetID":2,"name":"stickPool"},"compId":43},{"type":"Script","props":{"presetID":3,"runtime":"control/stick.ts"},"compId":44}],"loadList":[],"loadList3D":[]}

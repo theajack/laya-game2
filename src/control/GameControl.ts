@@ -4,24 +4,34 @@
  * 游戏控制脚本。定义了几个dropBox，bullet，createBoxInterval等变量，能够在IDE显示及设置该变量
  * 更多类型定义，请参考官方文档
  */
-import {initMap, moveMap} from './map-control';
+import {initMap, mapAutoMove} from './map-control';
 
 export default class GameControl extends Laya.Script {
-    /** @prop {name:ball,tips:"球",type:Prefab}*/
-    ball: Laya.Prefab;
+    /** @prop {name:wall,tips:"墙预制体对象",type:Prefab}*/
+    wall: Laya.Prefab;
+    /** @prop {name:player,tips:"玩家预制体对象",type:Prefab}*/
+    player: Laya.Prefab;
+    /** @prop {name:enemy,tips:"敌人预制体对象",type:Prefab}*/
+    enemy: Laya.Prefab;
+    /** @prop {name:star,tips:"道具预制体对象",type:Prefab}*/
+    star: Laya.Prefab;
     static instance: GameControl;
+    private _gameBox: Laya.Sprite;
     constructor () {
         super();
         GameControl.instance = this;
     }
 
     onEnable (): void {
+        this._gameBox = this.owner.getChildByName('gameBox') as Laya.Sprite;
+        window.createWall = this.createWall.bind(this);
+        console.log(this._gameBox);
     }
     onStart () {
         initMap(this);
     }
     onUpdate () {
-        
+        mapAutoMove();
     }
     onStageClick (e: Laya.Event): void {
         // 停止事件冒泡，提高性能，当然也可以不要
@@ -41,6 +51,14 @@ export default class GameControl extends Laya.Script {
         //     (this.owner.getChildByName('tip') as Laya.Text).visible = false;
         //     (this.owner.getChildByName('tip2') as Laya.Text).visible = false;
         // }
+    }
+
+    createWall (x: number, y: number) {
+        const wall: Laya.Sprite = Laya.Pool.getItemByCreateFun('wall', this.wall.create, this.wall);
+        wall.pos(x, y);
+        this._gameBox.addChild(wall);
+        // this.owner.addChild(wall);
+        window.wall = wall;
     }
     
 
