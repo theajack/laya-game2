@@ -16,4 +16,8 @@ export default class wall extends Laya.Script {
 
     onDisable (): void {
     }
+
+    onTriggerEnter (other: any, self: any, contact: any): void{
+        console.log('wall', other, self, contact);
+    }
 }

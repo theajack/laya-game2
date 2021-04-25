@@ -5,6 +5,7 @@
         MAP_WIDTH: 1200,
         MAP_HEIGHT: 1200,
         BLOCK_LEN: 300,
+        OBJECT_RADIUS: 50,
     };
     const COLOR = {
         MAP_BG: '#ffffff',
@@ -690,8 +691,8 @@
             this._gameBox.addChild(player);
             event.regist(EVENT.ON_MAP_MOVE, () => {
                 const mapOffset = getMapPosition();
-                this._uiControl.x = mapOffset.x + POS.SCREEN_CENTER.x;
-                this._uiControl.y = mapOffset.y + POS.SCREEN_CENTER.x;
+                player.x = mapOffset.x + POS.SCREEN_CENTER.x - SIZE.OBJECT_RADIUS;
+                player.y = mapOffset.y + POS.SCREEN_CENTER.y - SIZE.OBJECT_RADIUS;
             });
             window.player = player;
         }
@@ -720,8 +721,7 @@
         }
         onEnable() {
             this.stick = this.owner.getChildByName('stick');
-            window.stick = stick;
-            window._this = this;
+            window.stick = this;
         }
         onStageMouseDown(e) {
             if (isPointInRect({
@@ -813,9 +813,12 @@
             this.boolType = true;
         }
         onEnable() {
-            window.player = this;
+            window.playerScript = this;
         }
         onDisable() {
+        }
+        onTriggerEnter(other, self, contact) {
+            console.log(other, self, contact);
         }
     }
 
@@ -845,11 +848,13 @@
         }
         onDisable() {
         }
+        onTriggerEnter(other, self, contact) {
+            console.log('wall', other, self, contact);
+        }
     }
 
     class GameConfig {
-        constructor() {
-        }
+        constructor() { }
         static init() {
             var reg = Laya.ClassUtils.regClass;
             reg("control/GameControl.ts", GameControl);

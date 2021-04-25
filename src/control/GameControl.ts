@@ -4,7 +4,7 @@
  * 游戏控制脚本。定义了几个dropBox，bullet，createBoxInterval等变量，能够在IDE显示及设置该变量
  * 更多类型定义，请参考官方文档
  */
-import {EVENT} from '../util/constant';
+import {EVENT, SIZE} from '../util/constant';
 import event from '../util/event';
 import {getMapPosition, initMap, mapAutoMove, POS} from './map-control';
 
@@ -42,7 +42,7 @@ export default class GameControl extends Laya.Script {
     }
     onStart () {
         initMap(this);
-        // this._initPlayer();
+        this._initPlayer();
     }
     onUpdate () {
         mapAutoMove();
@@ -79,10 +79,12 @@ export default class GameControl extends Laya.Script {
         const player: Laya.Sprite = Laya.Pool.getItemByCreateFun('player', this.player.create, this.player);
         player.pos(POS.SCREEN_CENTER.x, POS.SCREEN_CENTER.y);
         this._gameBox.addChild(player);
+        // this.owner.addChild(player);
+        
         event.regist(EVENT.ON_MAP_MOVE, () => {
             const mapOffset = getMapPosition();
-            this._uiControl.x = mapOffset.x + POS.SCREEN_CENTER.x;
-            this._uiControl.y = mapOffset.y + POS.SCREEN_CENTER.x;
+            player.x = mapOffset.x + POS.SCREEN_CENTER.x - SIZE.OBJECT_RADIUS;
+            player.y = mapOffset.y + POS.SCREEN_CENTER.y - SIZE.OBJECT_RADIUS;
         });
         window.player = player;
     }

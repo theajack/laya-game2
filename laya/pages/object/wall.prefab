@@ -36,7 +36,7 @@
             "switchAble":true,
             "searchKey":"RigidBody",
             "removeAble":true,
-            "props":{"type":"static","presetID":3,"preset":"laya/pages/object/wall.prefab"},
+            "props":{"type":"static","presetID":3,"preset":"laya/pages/object/wall.prefab","gravityScale":0},
             "nodeParent":14,
             "label":"RigidBody(wall)",
             "isDirectory":false,

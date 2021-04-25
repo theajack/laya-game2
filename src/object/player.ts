@@ -12,9 +12,13 @@ export default class player extends Laya.Script {
     constructor () { super(); }
     
     onEnable (): void {
-        window.player = this;
+        window.playerScript = this;
     }
 
     onDisable (): void {
+    }
+
+    onTriggerEnter (other: any, self: any, contact: any): void{
+        console.log(other, self, contact);
     }
 }

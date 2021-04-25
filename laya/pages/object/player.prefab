@@ -36,7 +36,7 @@
             "switchAble":true,
             "searchKey":"RigidBody",
             "removeAble":true,
-            "props":{"type":"kinematic","presetID":3,"preset":"laya/pages/object/player.prefab","gravityScale":0},
+            "props":{"type":"dynamic","presetID":3,"preset":"laya/pages/object/player.prefab","gravityScale":0},
             "nodeParent":26,
             "label":"RigidBody(player)",
             "isDirectory":false,

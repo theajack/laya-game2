@@ -12,8 +12,7 @@ export default class stick extends Laya.Script {
     
     onEnable (): void {
         this.stick = this.owner.getChildByName('stick') as Laya.Sprite;
-        window.stick = stick;
-        window._this = this;
+        window.stick = this;
     }
     onStageMouseDown (e: Laya.Event): void{
         if (isPointInRect({
