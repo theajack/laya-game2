@@ -6,6 +6,7 @@
  */
 import {EVENT, SIZE} from '../util/constant';
 import event from '../util/event';
+import {IPoint} from '../util/type';
 import {getMapPosition, initMap, mapAutoMove, POS} from './map-control';
 
 export default class GameControl extends Laya.Script {
@@ -20,6 +21,7 @@ export default class GameControl extends Laya.Script {
     static instance: GameControl;
     private _gameBox: Laya.Sprite;
     private _uiControl: Laya.Sprite;
+    static player: Laya.Sprite;
     constructor () {
         super();
         GameControl.instance = this;
@@ -69,6 +71,7 @@ export default class GameControl extends Laya.Script {
 
     createWall (x: number, y: number) {
         const wall: Laya.Sprite = Laya.Pool.getItemByCreateFun('wall', this.wall.create, this.wall);
+        wall.pivot(wall.width / 2, wall.height / 2);
         wall.pos(x, y);
         this._gameBox.addChild(wall);
         // this.owner.addChild(wall);
@@ -77,16 +80,27 @@ export default class GameControl extends Laya.Script {
 
     private _initPlayer () {
         const player: Laya.Sprite = Laya.Pool.getItemByCreateFun('player', this.player.create, this.player);
+        const playerRig = player.getComponent(Laya.RigidBody) as Laya.RigidBody;
+        player.pivot(player.width / 2, player.height / 2);
+        GameControl.player = player;
         player.pos(POS.SCREEN_CENTER.x, POS.SCREEN_CENTER.y);
         this._gameBox.addChild(player);
-        // this.owner.addChild(player);
-        
-        event.regist(EVENT.ON_MAP_MOVE, () => {
-            const mapOffset = getMapPosition();
-            player.x = mapOffset.x + POS.SCREEN_CENTER.x - SIZE.OBJECT_RADIUS;
-            player.y = mapOffset.y + POS.SCREEN_CENTER.y - SIZE.OBJECT_RADIUS;
-        });
+
         window.player = player;
+
+        event.regist(EVENT.ON_STICK_DEG_CHANGE, ({
+            release, offset
+        }: {
+            release: boolean, offset: IPoint
+        }) => {
+            if (release) {
+                playerRig.setVelocity({x: 0, y: 0});
+            } else {
+                playerRig.setVelocity({
+                    x: offset.x * 0.1, y: offset.y * 0.1
+                });
+            }
+        });
     }
     
 

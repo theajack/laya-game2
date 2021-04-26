@@ -8,7 +8,7 @@ export default class player extends Laya.Script {
     /** @prop {name:boolType, tips:"布尔类型示例", type:Bool, default:true}*/
     public boolType: boolean = true;
     // 更多参数说明请访问: https://ldc2.layabox.com/doc/?nav=zh-as-2-4-0
-    
+
     constructor () { super(); }
     
     onEnable (): void {
@@ -19,6 +19,5 @@ export default class player extends Laya.Script {
     }
 
     onTriggerEnter (other: any, self: any, contact: any): void{
-        console.log(other, self, contact);
     }
 }

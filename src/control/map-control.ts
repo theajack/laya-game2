@@ -5,6 +5,8 @@ import GameControl from './GameControl';
 import {getStageSize} from './size';
 
 let scene: Laya.Scene;
+let boundary: Laya.Sprite;
+let gameBox: Laya.Sprite;
 
 const mapPos: IPoint = {x: 0, y: 0};
 
@@ -14,6 +16,9 @@ export function getMapPosition () {
 
 export function initMap (instance: GameControl) {
     scene = instance.owner as Laya.Scene;
+    boundary = scene.getChildByName('boundary') as Laya.Sprite;
+    gameBox = scene.getChildByName('gameBox') as Laya.Sprite;
+    window.scene = scene;
     scene.width = SIZE.MAP_WIDTH;
     scene.height = SIZE.MAP_HEIGHT;
     Laya.stage.bgColor = COLOR.STAGE_BG;
@@ -32,25 +37,47 @@ const AutoMove = {
 };
 export function initMapAutoMoveEvent () {
     event.regist(EVENT.ON_STICK_DEG_CHANGE, ({
-        release, offset
+        release
     }: {
         release: boolean, offset: IPoint
     }) => {
-        if (release) {
-            AutoMove.enable = false;
-        } else {
-            AutoMove.enable = true;
-            AutoMove.offset.x = offset.x * AutoMove.RATE;
-            AutoMove.offset.y = offset.y * AutoMove.RATE;
-        }
+        AutoMove.enable = !release;
+    });
+}
+
+function resetAllSpritePos () {
+    boundary.x = 0;
+    boundary.y = 0;
+    GameControl.player.x = GameControl.player.x;
+    GameControl.player.y = GameControl.player.y;
+    (gameBox._children as Array<Laya.Sprite>).forEach(sp => {
+        sp.x = sp.x;
+        sp.y = sp.y;
     });
 }
 
 export function mapAutoMove () {
     if (!AutoMove.enable) {return;}
 
-    POS.setMapOffset(AutoMove.offset);
+    // POS.setMapOffset(AutoMove.offset);
+    moveMapTo({
+        x: GameControl.player.x - POS.SCREEN_CENTER.x,
+        y: GameControl.player.y - POS.SCREEN_CENTER.y,
+    });
+    // scene.transform = new Laya.Matrix(1,0,0,1,-x,-y)
+    resetAllSpritePos();
 }
+
+window.testMove = () => {
+    
+    moveMapTo({
+        x: GameControl.player.x - POS.SCREEN_CENTER.x,
+        y: GameControl.player.y - POS.SCREEN_CENTER.y,
+    });
+    resetAllSpritePos();
+};
+
+window.moveMapTo = moveMapTo;
 
 export function moveMapTo (point: IPoint) {
     const size = getStageSize();
@@ -93,6 +120,7 @@ export const POS = (() => {
     const SCREEN_WIDTH = 667;
     const SCREEN_HEIGHT = 375;
     const DIAMETER = 100;
+    const OBJECT_DIAMETER = 100;
     const MAP_DIAMETER = 1200;
     const MARGIN = 40;
     const RADIUS = DIAMETER / 2;
@@ -100,6 +128,10 @@ export const POS = (() => {
     const STICK_OFFSET = (DIAMETER - STICK_DIAMETER) / 2;
     const RELATIVE_POS = new Laya.Point(MARGIN, SCREEN_HEIGHT - DIAMETER - MARGIN);
     const pos = {
+        MAP_OFFSET: {
+            x: SCREEN_WIDTH / 2 - OBJECT_DIAMETER / 2,
+            y: SCREEN_HEIGHT / 2  - OBJECT_DIAMETER / 2,
+        },
         MOVE_RATE: 0.3,
         DIAMETER, // 大圆的
         RADIUS, // 大圆的半径

@@ -1,4 +1,4 @@
-// v1.8.8
+// v1.8.7
 const ideModuleDir = global.ideModuleDir;
 const workSpaceDir = global.workSpaceDir;
 
@@ -74,24 +74,6 @@ gulp.task("copyPlatformFile_WX", ["preCreate_WX"], function() {
 	var stream = gulp.src(copyLibsList);
 	return stream.pipe(gulp.dest(releaseDir));
 });
-
-// 适配微信wasm
-gulp.task("fitwasm_WX", ["copyPlatformFile_WX"], function() {
-	let 
-		phy3dWasmJs = path.join(releaseDir, "libs", "laya.physics3D.wasm.js"),
-		phy3dWasmMinJs = path.join(releaseDir, "libs", "min", "laya.physics3D.wasm.min.js");
-	let isPhy3dWasmJsExist = fs.existsSync(phy3dWasmJs);
-	let isPhy3dWasmMinJsExist = fs.existsSync(phy3dWasmMinJs);
-	if (!isPhy3dWasmJsExist && !isPhy3dWasmMinJsExist) {
-		return;
-	}
-	let phy3dWasmName = isPhy3dWasmJsExist ? phy3dWasmJs : phy3dWasmMinJs;
-	con = fs.readFileSync(phy3dWasmName, "utf8");
-	con = con.replace(/WebAssembly/mg, "WXWebAssembly");
-	con = con.replace(/(fetch\(("[\w./]+")\)\.then[(\w)\s=>]+\{\n?\s*[(\.\w)\s=>]+\{)(\n?\s*WXWebAssembly\.instantiate\()(\w+,)/mg, "/** $1 */$3/** $4 */$2,");
-	con = con.replace(/(\}\);?\n?\s*\}\);?\n?)(\s*\}\);?\n?\s*\};)/mg, "/** $1 */$2");
-	fs.writeFileSync(phy3dWasmName, con, "utf8");
-})
 
 // 开放域的情况下，合并game.js和index.js，并删除game.js
 gulp.task("openData_WX", versiontask, function (cb) {

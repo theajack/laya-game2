@@ -36,7 +36,7 @@
             "switchAble":true,
             "searchKey":"RigidBody",
             "removeAble":true,
-            "props":{"type":"kinematic","presetID":3,"preset":"laya/pages/object/enemy.prefab"},
+            "props":{"type":"kinematic","presetID":3,"preset":"laya/pages/object/enemy.prefab","angularDamping":0.5},
             "nodeParent":23,
             "label":"RigidBody(enemy)",
             "isDirectory":false,
