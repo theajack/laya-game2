@@ -15,6 +15,7 @@
     const EVENT = {
         ON_MAP_MOVE: 'ON_MAP_MOVE',
         ON_STICK_DEG_CHANGE: 'ON_STICK_DEG_CHANGE',
+        ON_INIT_SIZE: 'ON_INIT_SIZE',
     };
 
     function isUndf(v) { return typeof v === 'undefined'; }
@@ -538,18 +539,61 @@
             height: Laya.stage.height
         };
     }
+    const DEFAULT_STAGE_SIZE = {
+        WIDTH: 667,
+        HEIGHT: 375,
+    };
+    const MAP_DIAMETER = 1200;
+    const OBJ_DIAMETER = 100;
+    const SCREEN_CENTER = {
+        x: DEFAULT_STAGE_SIZE.WIDTH / 2,
+        y: DEFAULT_STAGE_SIZE.HEIGHT / 2,
+    };
+    const STICK = (() => {
+        const MARGIN = 40;
+        const DIAMETER = 100;
+        let SCREEN_HEIGHT = 0;
+        const STICK_DIAMETER = DIAMETER / 2;
+        const RELATIVE_POS = new Laya.Point(MARGIN, 0);
+        const RELATIVE_CENTER_POS = new Laya.Point(RELATIVE_POS.x + DIAMETER / 2, 0);
+        const STICK_MARGIN = (DIAMETER - STICK_DIAMETER) / 2;
+        const POS = {
+            MARGIN: 40,
+            DIAMETER,
+            RADIUS: DIAMETER / 2,
+            STICK_DIAMETER,
+            STICK_RADIUS: DIAMETER / 4,
+            RELATIVE_POS,
+            STICK_MARGIN,
+            RELATIVE_CENTER_POS,
+            STICK_RELATIVE_POS: new Laya.Point(STICK_MARGIN, STICK_MARGIN),
+            setRelativeSize(stageHeight) {
+                SCREEN_HEIGHT = stageHeight;
+                RELATIVE_POS.y = SCREEN_HEIGHT - DIAMETER - MARGIN;
+                RELATIVE_CENTER_POS.y = RELATIVE_POS.y + DIAMETER / 2;
+            }
+        };
+        POS.setRelativeSize(DEFAULT_STAGE_SIZE.HEIGHT);
+        return POS;
+    })();
+    function setRelativeSize() {
+        const stageSize = getStageSize();
+        STICK.setRelativeSize(stageSize.height);
+        SCREEN_CENTER.x = stageSize.width / 2;
+        SCREEN_CENTER.y = stageSize.height / 2;
+        event.emit(EVENT.ON_INIT_SIZE, stageSize);
+        Laya.stage.on(Laya.Event.RESIZE, null, () => {
+            setRelativeSize();
+        });
+    }
 
     let scene;
-    let boundary;
-    let gameBox;
     const mapPos = { x: 0, y: 0 };
     function getMapPosition() {
         return mapPos;
     }
     function initMap(instance) {
         scene = instance.owner;
-        boundary = scene.getChildByName('boundary');
-        gameBox = scene.getChildByName('gameBox');
         window.scene = scene;
         scene.width = SIZE.MAP_WIDTH;
         scene.height = SIZE.MAP_HEIGHT;
@@ -570,39 +614,24 @@
             AutoMove.enable = !release;
         });
     }
-    function resetAllSpritePos() {
-        boundary.x = 0;
-        boundary.y = 0;
-        GameControl.player.x = GameControl.player.x;
-        GameControl.player.y = GameControl.player.y;
-        gameBox._children.forEach(sp => {
-            sp.x = sp.x;
-            sp.y = sp.y;
-        });
-    }
     function mapAutoMove() {
         if (!AutoMove.enable) {
             return;
         }
         moveMapTo({
-            x: GameControl.player.x - POS.SCREEN_CENTER.x,
-            y: GameControl.player.y - POS.SCREEN_CENTER.y,
+            x: GameControl.player.x - SCREEN_CENTER.x,
+            y: GameControl.player.y - SCREEN_CENTER.y,
         });
-        resetAllSpritePos();
     }
-    window.testMove = () => {
-        moveMapTo({
-            x: GameControl.player.x - POS.SCREEN_CENTER.x,
-            y: GameControl.player.y - POS.SCREEN_CENTER.y,
-        });
-        resetAllSpritePos();
-    };
     window.moveMapTo = moveMapTo;
     function moveMapTo(point) {
         const size = getStageSize();
         scene.viewport.setTo(point.x, point.y, size.width, size.height);
-        scene.x = -point.x;
-        scene.y = -point.y;
+        if (!Laya.stage.scrollRect) {
+            Laya.stage.scrollRect = new Laya.Rectangle(0, 0, size.width, size.height);
+        }
+        Laya.stage.scrollRect.x = point.x;
+        Laya.stage.scrollRect.y = point.y;
         mapPos.x = point.x;
         mapPos.y = point.y;
         event.emit(EVENT.ON_MAP_MOVE);
@@ -629,52 +658,6 @@
             y += SIZE.BLOCK_LEN;
         }
     }
-    const POS = (() => {
-        const SCREEN_WIDTH = 667;
-        const SCREEN_HEIGHT = 375;
-        const DIAMETER = 100;
-        const OBJECT_DIAMETER = 100;
-        const MAP_DIAMETER = 1200;
-        const MARGIN = 40;
-        const RADIUS = DIAMETER / 2;
-        const STICK_DIAMETER = DIAMETER / 2;
-        const STICK_OFFSET = (DIAMETER - STICK_DIAMETER) / 2;
-        const RELATIVE_POS = new Laya.Point(MARGIN, SCREEN_HEIGHT - DIAMETER - MARGIN);
-        const pos = {
-            MAP_OFFSET: {
-                x: SCREEN_WIDTH / 2 - OBJECT_DIAMETER / 2,
-                y: SCREEN_HEIGHT / 2 - OBJECT_DIAMETER / 2,
-            },
-            MOVE_RATE: 0.3,
-            DIAMETER,
-            RADIUS,
-            STICK_DIAMETER,
-            STICK_RADIUS: STICK_DIAMETER / 2,
-            RELATIVE_POS,
-            RELATIVE_CENTER_POS: new Laya.Point(RELATIVE_POS.x + DIAMETER / 2, RELATIVE_POS.y + DIAMETER / 2),
-            STICK_RELATIVE_POS: new Laya.Point(STICK_OFFSET, STICK_OFFSET),
-            STICK_OFFSET,
-            SCREEN_CENTER: { x: SCREEN_WIDTH / 2, y: SCREEN_HEIGHT / 2 },
-            setMapOffset(offset) {
-                const currentOffset = getMapPosition();
-                if (currentOffset.x + offset.x < -POS.SCREEN_CENTER.x) {
-                    offset.x = -POS.SCREEN_CENTER.x - currentOffset.x;
-                }
-                else if (currentOffset.x + offset.x > -POS.SCREEN_CENTER.x + MAP_DIAMETER) {
-                    offset.x = -POS.SCREEN_CENTER.x + MAP_DIAMETER - currentOffset.x;
-                }
-                if (currentOffset.y + offset.y < -POS.SCREEN_CENTER.y) {
-                    offset.y = -POS.SCREEN_CENTER.y - currentOffset.y;
-                }
-                else if (currentOffset.y + offset.y > -POS.SCREEN_CENTER.y + MAP_DIAMETER) {
-                    console.log(offset.y, POS.SCREEN_CENTER.y, MAP_DIAMETER, currentOffset.y);
-                    offset.y = -POS.SCREEN_CENTER.y + MAP_DIAMETER - currentOffset.y;
-                }
-                moveMap(offset);
-            }
-        };
-        return pos;
-    })();
 
     class GameControl extends Laya.Script {
         constructor() {
@@ -682,12 +665,17 @@
             GameControl.instance = this;
         }
         onEnable() {
+            setRelativeSize();
             this._gameBox = this.owner.getChildByName('gameBox');
             this._uiControl = this.owner.getChildByName('uiControl');
             event.regist(EVENT.ON_MAP_MOVE, () => {
                 const mapOffset = getMapPosition();
                 this._uiControl.x = mapOffset.x;
                 this._uiControl.y = mapOffset.y;
+            });
+            event.regist(EVENT.ON_INIT_SIZE, (size) => {
+                this._uiControl.width = size.width;
+                this._uiControl.height = size.height;
             });
             window.createWall = this.createWall.bind(this);
             window.gameBox = this._gameBox;
@@ -716,7 +704,7 @@
             const playerRig = player.getComponent(Laya.RigidBody);
             player.pivot(player.width / 2, player.height / 2);
             GameControl.player = player;
-            player.pos(POS.SCREEN_CENTER.x, POS.SCREEN_CENTER.y);
+            player.pos(SCREEN_CENTER.x, SCREEN_CENTER.y);
             this._gameBox.addChild(player);
             window.player = player;
             event.regist(EVENT.ON_STICK_DEG_CHANGE, ({ release, offset }) => {
@@ -728,6 +716,12 @@
                         x: offset.x * 0.1, y: offset.y * 0.1
                     });
                 }
+            });
+            event.regist(EVENT.ON_INIT_SIZE, () => {
+                moveMapTo({
+                    x: player.x - SCREEN_CENTER.x,
+                    y: player.y - SCREEN_CENTER.y,
+                });
             });
         }
     }
@@ -755,6 +749,11 @@
         }
         onEnable() {
             this.stick = this.owner.getChildByName('stick');
+            event.regist(EVENT.ON_INIT_SIZE, () => {
+                const stickBg = this.owner;
+                stickBg.x = STICK.RELATIVE_POS.x;
+                stickBg.y = STICK.RELATIVE_POS.y;
+            });
             window.stick = this;
         }
         onStageMouseDown(e) {
@@ -764,10 +763,10 @@
                     y: e.stageY,
                 },
                 rect: {
-                    x: POS.RELATIVE_POS.x,
-                    y: POS.RELATIVE_POS.y,
-                    width: POS.DIAMETER,
-                    height: POS.DIAMETER,
+                    x: STICK.RELATIVE_POS.x,
+                    y: STICK.RELATIVE_POS.y,
+                    width: STICK.DIAMETER,
+                    height: STICK.DIAMETER,
                 }
             })) {
                 this.isTouchDown = true;
@@ -787,8 +786,8 @@
             event.emit(EVENT.ON_STICK_DEG_CHANGE, {
                 release: false,
                 offset: {
-                    x: POS.RADIUS * (dx / dis),
-                    y: POS.RADIUS * (dy / dis)
+                    x: STICK.RADIUS * (dx / dis),
+                    y: STICK.RADIUS * (dy / dis)
                 }
             });
         }
@@ -800,25 +799,25 @@
             }
         }
         _setStickPosition(e) {
-            const dis = POS.RELATIVE_CENTER_POS.distance(e.stageX, e.stageY);
+            const dis = STICK.RELATIVE_CENTER_POS.distance(e.stageX, e.stageY);
             let x, y;
-            if (dis > POS.RADIUS) {
-                const rate = POS.RADIUS / dis;
-                x = POS.RADIUS + rate * (e.stageX - POS.RELATIVE_CENTER_POS.x);
-                y = POS.RADIUS + rate * (e.stageY - POS.RELATIVE_CENTER_POS.y);
+            if (dis > STICK.RADIUS) {
+                const rate = STICK.RADIUS / dis;
+                x = STICK.RADIUS + rate * (e.stageX - STICK.RELATIVE_CENTER_POS.x);
+                y = STICK.RADIUS + rate * (e.stageY - STICK.RELATIVE_CENTER_POS.y);
             }
             else {
-                x = e.stageX - POS.RELATIVE_POS.x;
-                y = e.stageY - POS.RELATIVE_POS.y;
+                x = e.stageX - STICK.RELATIVE_POS.x;
+                y = e.stageY - STICK.RELATIVE_POS.y;
             }
-            this._countStickDeg(dis, e.stageX - POS.RELATIVE_CENTER_POS.x, e.stageY - POS.RELATIVE_CENTER_POS.y);
-            this._initStickPosition(x - POS.STICK_RADIUS, y - POS.STICK_RADIUS);
+            this._countStickDeg(dis, e.stageX - STICK.RELATIVE_CENTER_POS.x, e.stageY - STICK.RELATIVE_CENTER_POS.y);
+            this._initStickPosition(x - STICK.STICK_RADIUS, y - STICK.STICK_RADIUS);
         }
         _resetStickPosition() {
-            this._initStickPosition(POS.STICK_OFFSET, POS.STICK_OFFSET);
+            this._initStickPosition(STICK.STICK_MARGIN, STICK.STICK_MARGIN);
         }
         _initStickPosition(x, y) {
-            POS.STICK_RELATIVE_POS.setTo(x, y);
+            STICK.STICK_RELATIVE_POS.setTo(x, y);
             this.stick.x = x;
             this.stick.y = y;
         }
@@ -851,8 +850,6 @@
         }
         onDisable() {
         }
-        onTriggerEnter(other, self, contact) {
-        }
     }
 
     class star extends Laya.Script {
@@ -881,12 +878,11 @@
         }
         onDisable() {
         }
-        onTriggerEnter(other, self, contact) {
-        }
     }
 
     class GameConfig {
-        constructor() { }
+        constructor() {
+        }
         static init() {
             var reg = Laya.ClassUtils.regClass;
             reg("control/GameControl.ts", GameControl);
@@ -900,7 +896,7 @@
     GameConfig.width = 667;
     GameConfig.height = 375;
     GameConfig.scaleMode = "fixedwidth";
-    GameConfig.screenMode = "none";
+    GameConfig.screenMode = "horizontal";
     GameConfig.alignV = "top";
     GameConfig.alignH = "left";
     GameConfig.startScene = "battle.scene";

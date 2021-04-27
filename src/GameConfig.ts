@@ -12,7 +12,7 @@ export default class GameConfig{
     static width:number=667;
     static height:number=375;
     static scaleMode:string="fixedwidth";
-    static screenMode:string="none";
+    static screenMode:string="horizontal";
     static alignV:string="top";
     static alignH:string="left";
     static startScene:any="battle.scene";

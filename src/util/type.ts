@@ -13,9 +13,12 @@ export interface ICircle extends IPoint {
     r: number;
 }
 
-export interface IRect {
+export interface IRect extends ISize {
     x: number;
     y: number;
+}
+
+export interface ISize {
     width: number;
     height: number;
 }

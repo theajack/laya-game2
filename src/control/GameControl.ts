@@ -4,10 +4,11 @@
  * 游戏控制脚本。定义了几个dropBox，bullet，createBoxInterval等变量，能够在IDE显示及设置该变量
  * 更多类型定义，请参考官方文档
  */
-import {EVENT, SIZE} from '../util/constant';
+import {EVENT} from '../util/constant';
 import event from '../util/event';
-import {IPoint} from '../util/type';
-import {getMapPosition, initMap, mapAutoMove, POS} from './map-control';
+import {IPoint, ISize} from '../util/type';
+import {getMapPosition, initMap, mapAutoMove, moveMapTo} from './map-control';
+import {SCREEN_CENTER, setRelativeSize} from './size';
 
 export default class GameControl extends Laya.Script {
     /** @prop {name:wall,tips:"墙预制体对象",type:Prefab}*/
@@ -28,6 +29,8 @@ export default class GameControl extends Laya.Script {
     }
 
     onEnable (): void {
+        setRelativeSize();
+        
         this._gameBox = this.owner.getChildByName('gameBox') as Laya.Sprite;
         this._uiControl = this.owner.getChildByName('uiControl') as Laya.Sprite;
         
@@ -35,6 +38,11 @@ export default class GameControl extends Laya.Script {
             const mapOffset = getMapPosition();
             this._uiControl.x = mapOffset.x;
             this._uiControl.y = mapOffset.y;
+        });
+
+        event.regist(EVENT.ON_INIT_SIZE, (size: ISize) => {
+            this._uiControl.width = size.width;
+            this._uiControl.height = size.height;
         });
 
         window.createWall = this.createWall.bind(this);
@@ -83,7 +91,8 @@ export default class GameControl extends Laya.Script {
         const playerRig = player.getComponent(Laya.RigidBody) as Laya.RigidBody;
         player.pivot(player.width / 2, player.height / 2);
         GameControl.player = player;
-        player.pos(POS.SCREEN_CENTER.x, POS.SCREEN_CENTER.y);
+        // 给定人物其实位置
+        player.pos(200, 200);
         this._gameBox.addChild(player);
 
         window.player = player;
@@ -93,13 +102,17 @@ export default class GameControl extends Laya.Script {
         }: {
             release: boolean, offset: IPoint
         }) => {
-            if (release) {
-                playerRig.setVelocity({x: 0, y: 0});
-            } else {
-                playerRig.setVelocity({
-                    x: offset.x * 0.1, y: offset.y * 0.1
-                });
-            }
+            playerRig.setVelocity({
+                x: release ? 0 : offset.x * 0.1,
+                y: release ? 0 : offset.y * 0.1
+            });
+        });
+        
+        event.regist(EVENT.ON_INIT_SIZE, () => {
+            moveMapTo({
+                x: player.x - SCREEN_CENTER.x,
+                y: player.y - SCREEN_CENTER.y,
+            });
         });
     }
     

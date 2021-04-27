@@ -1,7 +1,7 @@
 import {EVENT} from '../util/constant';
 import event from '../util/event';
 import {isPointInRect} from '../util/util';
-import {POS} from './map-control';
+import {STICK} from './size';
 
 
 export default class stick extends Laya.Script {
@@ -12,6 +12,13 @@ export default class stick extends Laya.Script {
     
     onEnable (): void {
         this.stick = this.owner.getChildByName('stick') as Laya.Sprite;
+        
+        event.regist(EVENT.ON_INIT_SIZE, () => {
+            const stickBg = this.owner as Laya.Sprite;
+            stickBg.x = STICK.RELATIVE_POS.x;
+            stickBg.y = STICK.RELATIVE_POS.y;
+        });
+
         window.stick = this;
     }
     onStageMouseDown (e: Laya.Event): void{
@@ -21,10 +28,10 @@ export default class stick extends Laya.Script {
                 y: e.stageY,
             },
             rect: {
-                x: POS.RELATIVE_POS.x,
-                y: POS.RELATIVE_POS.y,
-                width: POS.DIAMETER,
-                height: POS.DIAMETER,
+                x: STICK.RELATIVE_POS.x,
+                y: STICK.RELATIVE_POS.y,
+                width: STICK.DIAMETER,
+                height: STICK.DIAMETER,
             }
         })) {
             this.isTouchDown = true;
@@ -42,8 +49,8 @@ export default class stick extends Laya.Script {
         event.emit(EVENT.ON_STICK_DEG_CHANGE, {
             release: false,
             offset: {
-                x: POS.RADIUS * (dx / dis),
-                y: POS.RADIUS * (dy / dis)
+                x: STICK.RADIUS * (dx / dis),
+                y: STICK.RADIUS * (dy / dis)
             }
         });
     }
@@ -56,25 +63,24 @@ export default class stick extends Laya.Script {
     }
 
     private _setStickPosition (e: Laya.Event) {
-        const dis = POS.RELATIVE_CENTER_POS.distance(e.stageX, e.stageY);
+        const dis = STICK.RELATIVE_CENTER_POS.distance(e.stageX, e.stageY);
         let x: number, y: number;
-        if (dis >  POS.RADIUS) {
-            const rate = POS.RADIUS / dis;
-            x = POS.RADIUS + rate * (e.stageX - POS.RELATIVE_CENTER_POS.x);
-            y = POS.RADIUS + rate * (e.stageY - POS.RELATIVE_CENTER_POS.y);
+        if (dis >  STICK.RADIUS) {
+            const rate = STICK.RADIUS / dis;
+            x = STICK.RADIUS + rate * (e.stageX - STICK.RELATIVE_CENTER_POS.x);
+            y = STICK.RADIUS + rate * (e.stageY - STICK.RELATIVE_CENTER_POS.y);
         } else {
-            x = e.stageX - POS.RELATIVE_POS.x;
-            y = e.stageY - POS.RELATIVE_POS.y;
+            x = e.stageX - STICK.RELATIVE_POS.x;
+            y = e.stageY - STICK.RELATIVE_POS.y;
         }
-        this._countStickDeg(dis, e.stageX - POS.RELATIVE_CENTER_POS.x, e.stageY - POS.RELATIVE_CENTER_POS.y);
-        // POS.setMapOffset(x, y);
-        this._initStickPosition(x - POS.STICK_RADIUS, y - POS.STICK_RADIUS);
+        this._countStickDeg(dis, e.stageX - STICK.RELATIVE_CENTER_POS.x, e.stageY - STICK.RELATIVE_CENTER_POS.y);
+        this._initStickPosition(x - STICK.STICK_RADIUS, y - STICK.STICK_RADIUS);
     }
     private _resetStickPosition () {
-        this._initStickPosition(POS.STICK_OFFSET, POS.STICK_OFFSET);
+        this._initStickPosition(STICK.STICK_MARGIN, STICK.STICK_MARGIN);
     }
     private _initStickPosition (x: number, y: number) {
-        POS.STICK_RELATIVE_POS.setTo(x, y);
+        STICK.STICK_RELATIVE_POS.setTo(x, y);
         this.stick.x = x;
         this.stick.y = y;
     }

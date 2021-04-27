@@ -30,7 +30,7 @@ import Scene=Laya.Scene;]]>   </codeImportsTS>
    <startScene/>
    <engineType>2D   </engineType>
    <scaleMode>fixedwidth   </scaleMode>
-   <screenMode>none   </screenMode>
+   <screenMode>horizontal   </screenMode>
    <alignV>top   </alignV>
    <alignH>left   </alignH>
    <designWidth>667   </designWidth>

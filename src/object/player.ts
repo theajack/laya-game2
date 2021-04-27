@@ -18,6 +18,6 @@ export default class player extends Laya.Script {
     onDisable (): void {
     }
 
-    onTriggerEnter (other: any, self: any, contact: any): void{
-    }
+    // onTriggerEnter (other: any, self: any, contact: any): void{
+    // }
 }

@@ -24,4 +24,5 @@ export const COLOR = {
 export const EVENT = {
     ON_MAP_MOVE: 'ON_MAP_MOVE',
     ON_STICK_DEG_CHANGE: 'ON_STICK_DEG_CHANGE',
+    ON_INIT_SIZE: 'ON_INIT_SIZE',
 };
